@@ -40,7 +40,7 @@ const countrySchema = {
 
 const sortSchema = {
   properties: {
-    option: {
+    sortOption: {
       pattern: /^f$|^e$|^a$/,
       description: `Please input one of the following options to sort the data:
         - "f" to sort by followers
@@ -58,30 +58,25 @@ const sortSchema = {
 
 prompt.start();
 
-prompt.get(promptSchema, (err, result) => {
-  onError(err);
+async function main() {
+  const { option } = await prompt.get(promptSchema);
 
-  const { option } = result;
   const schema = option === 'cat' ? catSchema : countrySchema;
   const pathname = option === 'cat' ? 'category' : 'country';
 
-  prompt.get(schema, async (err, result) => {
-    onError(err)
+  const { value } = await prompt.get(schema);
 
-    const { value } = result;
+  console.log(`Retrieving influencers data by ${pathname} name:`, value, '...');
 
-    console.log(`Retrieving influencers data by ${pathname} name:`, value, '...');
+  const resp = await axios.get(`http://localhost:3000/${pathname}/${value}`);
+  const { data: influencerData } = resp;
 
-    const resp = await axios.get(`http://localhost:3000/${pathname}/${value}`);
-    const { data: influencerData } = resp;
+  console.log('Data fetched.');
 
-    console.log('Data fetched.');
+  const { sortOption } = await prompt.get(sortSchema);
 
-    prompt.get(sortSchema, (err, result) => {
-      onError(err);
-  
-      const sortedData = sortData(result.option as string, influencerData);
-      console.table(sortedData);
-    });
-  });
-});
+  const sortedData = sortData(sortOption as string, influencerData);
+  console.table(sortedData);
+}
+
+main();
