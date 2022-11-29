@@ -62,7 +62,6 @@ prompt.get(promptSchema, (err, result) => {
   onError(err);
 
   const { option } = result;
-
   const schema = option === 'cat' ? catSchema : countrySchema;
   const pathname = option === 'cat' ? 'category' : 'country';
 
@@ -72,12 +71,12 @@ prompt.get(promptSchema, (err, result) => {
     const { value } = result;
 
     console.log(`Retrieving influencers data by ${pathname} name:`, value, '...');
-    const resp = await axios.get(`http://localhost:3000/${pathname}/${value}`);
 
+    const resp = await axios.get(`http://localhost:3000/${pathname}/${value}`);
     const { data: influencerData } = resp;
 
     console.log('Data fetched.');
-    
+
     prompt.get(sortSchema, (err, result) => {
       onError(err);
   
