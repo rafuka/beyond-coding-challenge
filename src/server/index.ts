@@ -1,7 +1,9 @@
 import express, { Express, Request, Response } from 'express';
-import { CastingFunction, CastingContext, parse } from 'csv-parse/sync';
+import { parse } from 'csv-parse/sync';
 import * as fs from 'fs';
 import * as path from "path";
+
+import { castCSVNumberVals } from './helpers';
 
 
 type Influencer = {
@@ -75,23 +77,3 @@ app.listen(port, () => {
 
 
 
-function convertToInteger(strNumber: string): number {
-  const num: number = parseFloat(strNumber);
-
-  if (strNumber.includes('M')) return num * 1000000;
-  else if (strNumber.includes('K')) return num * 1000;
-  
-  return parseInt(strNumber);
-}
-
-function castCSVNumberVals(columns: Array<string|number>): CastingFunction {
-  return (colValue: string, context: CastingContext) => { 
-    const { column } = context;
-
-    if (columns.includes(column)) {
-      return convertToInteger(colValue);
-    }
-
-    return colValue;
-  }
-}
