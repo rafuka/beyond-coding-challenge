@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from 'express';
-import { parse } from 'csv-parse/sync';
+import { CastingFunction, CastingContext, parse } from 'csv-parse/sync';
 import * as fs from 'fs';
 import * as path from "path";
 
@@ -41,15 +41,7 @@ try {
     delimiter: ',',
     columns: DATA_COLUMNS,
     fromLine: CSV_STARTING_LINE,
-    cast: (colValue, context) => { // Set values to integers for number type columns
-      const { column } = context;
-
-      if (column === 'followers' || column === 'authEngagement' || column === 'engagementAvg') {
-        return convertToInteger(colValue);
-      }
-
-      return colValue;
-    }
+    cast : castCSVNumberVals(['followers', 'authEngagement', 'engagementAvg'])
   });
 } catch (err) {
   console.error(err);
@@ -63,14 +55,16 @@ app.get('/', (req: Request, res: Response) => {
 
 app.get('/category/:catName', (req: Request, res: Response) => {
   const { catName } = req.params;
-  const influencers = influencersData.filter(inf => inf.category1 === catName || inf.category2 === catName);
+  const influencers = influencersData
+    .filter(inf => inf.category1 === catName || inf.category2 === catName);
   
   res.send(influencers);
 });
 
 app.get('/country/:countryName', (req: Request, res: Response) => {
   const { countryName } = req.params;
-  const influencers = influencersData.filter(inf => inf.audienceCountry === countryName);
+  const influencers = influencersData
+    .filter(inf => inf.audienceCountry === countryName);
   
   res.send(influencers);
 });
@@ -83,8 +77,21 @@ app.listen(port, () => {
 
 function convertToInteger(strNumber: string): number {
   const num: number = parseFloat(strNumber);
+
   if (strNumber.includes('M')) return num * 1000000;
   else if (strNumber.includes('K')) return num * 1000;
   
   return parseInt(strNumber);
+}
+
+function castCSVNumberVals(columns: Array<string|number>): CastingFunction {
+  return (colValue: string, context: CastingContext) => { 
+    const { column } = context;
+
+    if (columns.includes(column)) {
+      return convertToInteger(colValue);
+    }
+
+    return colValue;
+  }
 }
