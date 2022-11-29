@@ -9,10 +9,10 @@ type Influencer = {
   iGName: string,
   category1: string,
   category2: string,
-  followers: string,
+  followers: number,
   audienceCountry: string,
-  authEngagement: string,
-  engagementAvg: string
+  authEngagement: number,
+  engagementAvg: number
 };
 
 
@@ -40,7 +40,16 @@ try {
   influencersData = parse(fileContent, {
     delimiter: ',',
     columns: DATA_COLUMNS,
-    from_line: CSV_STARTING_LINE
+    fromLine: CSV_STARTING_LINE,
+    cast: (colValue, context) => { // Set values to integers for number type columns
+      const { column } = context;
+
+      if (column === 'followers' || column === 'authEngagement' || column === 'engagementAvg') {
+        return convertToInteger(colValue);
+      }
+
+      return colValue;
+    }
   });
 } catch (err) {
   console.error(err);
@@ -54,22 +63,28 @@ app.get('/', (req: Request, res: Response) => {
 
 app.get('/category/:catName', (req: Request, res: Response) => {
   const { catName } = req.params;
-
   const influencers = influencersData.filter(inf => inf.category1 === catName || inf.category2 === catName);
   
   res.send(influencers);
-  
 });
 
 app.get('/country/:countryName', (req: Request, res: Response) => {
   const { countryName } = req.params;
-
   const influencers = influencersData.filter(inf => inf.audienceCountry === countryName);
   
   res.send(influencers);
-  
 });
 
 app.listen(port, () => {
   console.log(`Server running at ${port}`);
 });
+
+
+
+function convertToInteger(strNumber: string): number {
+  const num: number = parseFloat(strNumber);
+  if (strNumber.includes('M')) return num * 1000000;
+  else if (strNumber.includes('K')) return num * 1000;
+  
+  return parseInt(strNumber);
+}
