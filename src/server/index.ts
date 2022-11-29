@@ -4,18 +4,7 @@ import * as fs from 'fs';
 import * as path from "path";
 
 import { castCSVNumberVals } from './helpers';
-
-
-type Influencer = {
-  influencerName: string,
-  iGName: string,
-  category1: string,
-  category2: string,
-  followers: number,
-  audienceCountry: string,
-  authEngagement: number,
-  engagementAvg: number
-};
+import { Influencer } from '../types';
 
 
 const app: Express = express();
